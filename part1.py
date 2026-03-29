@@ -66,8 +66,8 @@ import jax.numpy as jnp
 from jax import grad, jit, lax
 
 # Convert existing NumPy data into JAX arrays
-X_train = jnp.asarray(X_train)
-X_test = jnp.asarray(X_test)
+X_train = jnp.asarray(x_train)
+X_test = jnp.asarray(x_test)
 y_train = jnp.asarray(y_train)
 y_test = jnp.asarray(y_test)
 
