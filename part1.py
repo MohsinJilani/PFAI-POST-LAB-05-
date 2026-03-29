@@ -58,3 +58,36 @@ print("Test shape:", x_test.shape)
 if gender_df is not None:
     print("\nGender submission preview:")
     print(gender_df.head())
+
+# Person 2: Logistic Regression model using JAX
+
+import jax
+import jax.numpy as jnp
+from jax import grad, jit, lax
+
+# Convert existing NumPy data into JAX arrays
+X_train = jnp.asarray(X_train)
+X_test = jnp.asarray(X_test)
+y_train = jnp.asarray(y_train)
+y_test = jnp.asarray(y_test)
+
+# Sigmoid function: turns values into probabilities between 0 and 1
+def sigmoid(z):
+    return 1.0 / (1.0 + jnp.exp(-z))
+
+# Prediction function: applies weights and bias, then passes through sigmoid
+def predict(params, X):
+    w, b = params
+    return sigmoid(X @ w + b)
+
+# Loss function (binary cross-entropy) to measure prediction error
+def loss_fn(params, X, y):
+    preds = predict(params, X)
+    eps = 1e-7  # small value to avoid log(0) errors
+    return -jnp.mean(
+        y * jnp.log(preds + eps) +
+        (1 - y) * jnp.log(1 - preds + eps)
+    )
+
+# Compute gradients of the loss function using JAX
+loss_grad = grad(loss_fn)
