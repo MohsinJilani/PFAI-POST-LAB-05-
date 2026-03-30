@@ -91,3 +91,63 @@ def loss_fn(params, X, y):
 
 # Compute gradients of the loss function using JAX
 loss_grad = grad(loss_fn)
+
+# Person 3: Optimize training and prediction using JIT and lax.fori_loop
+
+import time
+
+# JIT-compiled training step for faster updates
+@jit
+def train_step(params, X, y, lr):
+    grads = loss_grad(params, X, y)
+    w, b = params
+    dw, db = grads
+    new_params = (w - lr * dw, b - lr * db)
+    return new_params
+
+# Training function using a JAX loop instead of a Python loop
+def train_jax(X, y, lr=0.01, epochs=100):
+    n_features = X.shape[1]
+
+    # Initialize weights and bias
+    params = (
+        jnp.zeros((n_features,), dtype=jnp.float32),
+        jnp.array(0.0, dtype=jnp.float32)
+    )
+
+    # Run training loop inside JAX for speed
+    def body_fn(i, params):
+        params = train_step(params, X, y, lr)
+        return params
+
+    params = lax.fori_loop(0, epochs, body_fn, params)
+    return params
+
+# Warm-up run to compile JAX functions
+_ = train_jax(X_train, y_train, lr=0.01, epochs=1)
+
+# Measure training time
+start_time = time.perf_counter()
+params = train_jax(X_train, y_train, lr=0.01, epochs=100)
+jax_train_time = time.perf_counter() - start_time
+
+print("\nFast JAX training completed.")
+print("JAX training time:", jax_train_time)
+
+# JIT-compiled batch prediction function
+@jit
+def predict_batch_jit(params, X):
+    return predict(params, X)
+
+# Warm-up prediction to compile
+_ = predict_batch_jit(params, X_test).block_until_ready()
+
+# Measure prediction time
+start_time = time.perf_counter()
+probs = predict_batch_jit(params, X_test)
+probs.block_until_ready()
+jax_pred_time = time.perf_counter() - start_time
+
+print("JAX batch prediction completed.")
+print("JAX prediction time:", jax_pred_time)
+print("First 10 predictions:", np.array(probs[:10]))
