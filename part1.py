@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 # Folder that contains the CSV files
-BASE_DIR = r"D:\PFAI\PFAILAB05\PFAI-POST-LAB-05-"
+BASE_DIR = "."
 train_path = os.path.join(BASE_DIR, "train.csv")
 gender_path = os.path.join(BASE_DIR, "gender_submission.csv")
 
@@ -151,3 +151,41 @@ jax_pred_time = time.perf_counter() - start_time
 print("JAX batch prediction completed.")
 print("JAX prediction time:", jax_pred_time)
 print("First 10 predictions:", np.array(probs[:10]))
+
+# Person 4: Evaluation and Final Output
+
+# Function to calculate accuracy
+def accuracy(params, X, y):
+    preds = predict(params, X)
+    pred_labels = (preds >= 0.5).astype(jnp.float32)
+    return jnp.mean(pred_labels == y)
+
+# Calculate accuracy
+acc = accuracy(params, X_test, y_test)
+
+# Print final results
+print("\n=== Final Results ===")
+print("Accuracy:", float(acc))
+print("Error Rate:", float(1 - acc))
+print("Training Time:", jax_train_time)
+print("Prediction Time:", jax_pred_time)
+
+# Convert probabilities into 0/1 predictions
+final_preds = (probs >= 0.5).astype(jnp.int32)
+
+# Show some predictions vs actual values
+print("\nSample Predictions vs Actual:")
+for i in range(10):
+    print(f"Predicted: {int(final_preds[i])}, Actual: {int(y_test[i])}")
+
+# Store results in table including Error Rate
+results = pd.DataFrame({
+    "Model": ["JAX Logistic Regression"],
+    "Accuracy": [float(acc)],
+    "Error_Rate": [float(1 - acc)],
+    "Train_Time": [jax_train_time],
+    "Predict_Time": [jax_pred_time]
+})
+
+print("\nResults Table:")
+print(results)
