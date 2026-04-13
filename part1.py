@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 # Folder that contains the CSV files
-BASE_DIR = r"D:\PFAI\PFAILAB05\PFAI-POST-LAB-05-"
+BASE_DIR = "."
 train_path = os.path.join(BASE_DIR, "train.csv")
 gender_path = os.path.join(BASE_DIR, "gender_submission.csv")
 
